@@ -80,7 +80,7 @@ app.get("/api/users", (req, res) => {
         The response returned will be the user object with the exercise fields added.*/
 
 app.post("/api/users/:_id/exercises", (req, res) => {
-  const { _id, description, duration, date } = req.body;
+  const { _id, description, duration, date } = req.body || req.params
   User.findOne({ _id }, (err, userFound) => {
     if (err)
       return res.json({
