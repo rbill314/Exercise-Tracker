@@ -105,15 +105,13 @@ app.post("/api/users/:_id/exercises", (req, res) => {
         });
       const lenOfLog = data.log.length;
 
-      let sendData = {
+      return res.json({
         username: data.username,
         description: data.log[lenOfLog - 1].description,
         duration: data.log[lenOfLog - 1].duration,
         _id: data._id,
         date: data.log[lenOfLog - 1].date
-      };
-
-      res.json(sendData);
+      });
     });
   });
 });
