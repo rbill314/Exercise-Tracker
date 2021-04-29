@@ -3,7 +3,6 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const moment = require("moment");
 const shortId = require("shortid");
 
 /*Connect to database*/
@@ -80,8 +79,8 @@ app.get("/api/users", (req, res) => {
         The response returned will be the user object with the exercise fields added.*/
 
 app.post("/api/users/:_id/exercises", (req, res) => {
-  const { _id, description, duration, date } = req.body || req.params
-  User.findOne({ _id }, (err, userFound) => {
+  const { _id, description, duration, date } = req.body || req.params;
+  User.findOne({ _id }, (err, found) => {
     if (err)
       return res.json({
         error: "Could not find Carmen Sandiego"
@@ -95,30 +94,26 @@ app.post("/api/users/:_id/exercises", (req, res) => {
     const exercise = {
       description: description,
       duration: duration,
-      date: exerDate
+      date: exerDate.toDateString()
     };
-    userFound.log.push(exercise);
-    userFound.count = userFound.log.length;
-    userFound.save((err, data) => {
+    found.log.push(exercise);
+    found.count = found.log.length;
+    found.save((err, data) => {
       if (err)
         return res.json({
           error: "Not letting you save today"
         });
       const lenOfLog = data.log.length;
 
-      let displayDate = moment(exercise.date)
-        .toDate()
-        .toDateString();
-
       let sendData = {
         username: data.username,
         description: data.log[lenOfLog - 1].description,
         duration: data.log[lenOfLog - 1].duration,
         _id: data._id,
-        date: displayDate
+        date: data.log[lenOfLog - 1].date
       };
 
-      res.send(sendData);
+      res.json(sendData);
     });
   });
 });
