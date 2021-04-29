@@ -47,18 +47,21 @@ const User = mongoose.model("User", userSchema);
     The returned response will be an object with username and _id properties.*/
 
 app.post("/api/users", (req, res) => {
-  User.findOne({ username: req.body.username }, (err, foundUser) => {
+  const username = req.body.username;
+  User.findOne({ username: username }, (err, found) => {
     if (err) return;
-    if (foundUser) {
+    if (found) {
       res.send("Username Taken");
     } else {
       const newUser = new User({
-        username: req.body.username
+        username: username
       });
-      newUser.save();
-      res.json({
-        username: req.body.username,
-        _id: newUser._id
+      newUser.save((err, save) => {
+        if (err) return;
+        res.json({
+          username: username,
+          _id: save._id
+        });
       });
     }
   });
@@ -68,9 +71,12 @@ app.post("/api/users", (req, res) => {
     Each element in the array is an object containing a user's username and _id.*/
 
 app.get("/api/users", (req, res) => {
-  User.find({}, (err, users) => {
-    if (err) return;
-    res.json(users);
+  User.find({}, "username _id", (err, users) => {
+    let arr = [];
+    users.map(user => {
+      arr.push(user);
+    });
+    res.json(arr);
   });
 });
 
@@ -115,6 +121,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
     });
   });
 });
+
 
 /*Test 4: You can make a GET request to /api/users/:_id/logs to retrieve a full exercise log of any user.
     The returned response will be the user object with a log array of all the exercises added.
