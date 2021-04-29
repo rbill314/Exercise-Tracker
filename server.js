@@ -84,44 +84,44 @@ app.get("/api/users", (req, res) => {
     If no date is supplied, the current date will be used.
         The response returned will be the user object with the exercise fields added.*/
 
-app.post("/api/users/:_id/exercises", (req, res) => {
-  const { _id, description, duration, date } = req.body || req.params;
-  User.findOne({ _id }, (err, found) => {
-    if (err)
-      return res.json({
-        error: "Could not find Carmen Sandiego"
-      });
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  let { description, duration, date } = req.body;
+  let id = req.params._id;
+  if (!date) {
+    date = new Date().toDateString();
+  } else {
+    date = new Date(date).toDateString();
+  }
 
-    let exerDate = new Date();
-    if (req.body.date && req.body.date !== "") {
-      exerDate = new Date(req.body.date);
-    }
-
-    const exercise = {
-      description: description,
-      duration: duration,
-      date: exerDate.toDateString()
-    };
-    found.log.push(exercise);
-    found.count = found.log.length;
-    found.save((err, data) => {
-      if (err)
-        return res.json({
-          error: "Not letting you save today"
-        });
-      const lenOfLog = data.log.length;
-
-      return res.json({
-        username: data.username,
-        description: data.log[lenOfLog - 1].description,
-        duration: data.log[lenOfLog - 1].duration,
-        _id: data._id,
-        date: data.log[lenOfLog - 1].date
-      });
+  try {
+    let findOne = await User.findOne({
+      _id: id
     });
-  });
-});
+    // If user exists, add exercise
+    if (findOne) {
+      console.log("Retrieving Stored User");
+      findOne.count++;
+      findOne.log.push({
+        description: description,
+        duration: parseInt(duration),
+        date: date
+      });
+      findOne.save();
 
+      res.json({
+        username: findOne.username,
+        description: description,
+        duration: parseInt(duration),
+        _id: id,
+        date: date
+      });
+    }
+    // If user doesn't exist, return error
+  } catch (err) {
+    console.error(err);
+  }
+});
+//Test #3 coded by u/Reckitron at FreeCodeCamp Community on Reddit
 
 /*Test 4: You can make a GET request to /api/users/:_id/logs to retrieve a full exercise log of any user.
     The returned response will be the user object with a log array of all the exercises added.
