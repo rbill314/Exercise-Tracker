@@ -84,7 +84,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   User.findOne({ _id }, (err, userFound) => {
     if (err)
       return res.json({
-        error: "Counld not find Carmen Sandiego"
+        error: "Could not find Carmen Sandiego"
       });
 
     let exerDate = new Date();
