@@ -45,6 +45,7 @@ const User = mongoose.model("User", userSchema);
 
 /*Test 1: You can POST to /api/users with form data username to create a new user.
     The returned response will be an object with username and _id properties.*/
+//PASSED
 
 app.post("/api/users", (req, res) => {
   const username = req.body.username;
@@ -69,6 +70,7 @@ app.post("/api/users", (req, res) => {
 
 /*Test 2: You can make a GET request to /api/users to get an array of all users.
     Each element in the array is an object containing a user's username and _id.*/
+//PASSED
 
 app.get("/api/users", (req, res) => {
   User.find({}, "username _id", (err, users) => {
@@ -83,6 +85,7 @@ app.get("/api/users", (req, res) => {
 /*Test 3: You can POST to /api/users/:_id/exercises with form data description, duration, and optionally date.
     If no date is supplied, the current date will be used.
         The response returned will be the user object with the exercise fields added.*/
+//PASSED
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let { description, duration, date } = req.body;
@@ -121,20 +124,101 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     console.error(err);
   }
 });
-//Test #3 coded by u/Reckitron at FreeCodeCamp Community on Reddit
 
 /*Test 4: You can make a GET request to /api/users/:_id/logs to retrieve a full exercise log of any user.
     The returned response will be the user object with a log array of all the exercises added.
         Each log item has the description, duration, and date properties.*/
+//PASSED
 
 /*Test 5: A request to a user's log (/api/users/:_id/logs) returns an object with a count
     property representing the number of exercises returned.*/
+//PASSED
 
 /*Test 6: You can add from, to and limit parameters to a /api/users/:_id/logs request to retrieve part
     of the log of any user. from and to are dates in yyyy-mm-dd format. limit is an integer of how many 
       logs to send back.*/
+//PASSED
+
+app.get("/api/users/:_id/logs", (req, res) => {
+  User.findById(req.params._id, (error, result) => {
+    if (!error) {
+      let resObj = result;
+
+      if (req.query.from || req.query.to) {
+        let fromDate = new Date(0);
+        let toDate = new Date();
+
+        if (req.query.from) {
+          fromDate = new Date(req.query.from);
+        }
+
+        if (req.query.to) {
+          toDate = new Date(req.query.to);
+        }
+
+        fromDate = fromDate.getTime();
+        toDate = toDate.getTime();
+
+        resObj.log = resObj.log.filter(session => {
+          let sessionDate = new Date(session.date).getTime();
+
+          return sessionDate >= fromDate && sessionDate <= toDate;
+        });
+      }
+
+      if (req.query.limit) {
+        resObj.log = resObj.log.slice(0, req.query.limit);
+      }
+
+      resObj = resObj.toJSON();
+      resObj["count"] = result.log.length;
+      res.json(resObj);
+    }
+  });
+});
+
+app.post("/api/users/view", (req, res) => {
+  console.log(req.body);
+  User.findById(req.body._id, (error, result) => {
+    if (!error) {
+      let resObj = result;
+
+      if (req.body.from || req.body.to) {
+        let fromDate = new Date(0);
+        let toDate = new Date();
+
+        if (req.body.from) {
+          fromDate = new Date(req.body.from);
+        }
+
+        if (req.body.to) {
+          toDate = new Date(req.body.to);
+        }
+
+        fromDate = fromDate.getTime();
+        toDate = toDate.getTime();
+
+        resObj.log = resObj.log.filter(session => {
+          let sessionDate = new Date(session.date).getTime();
+
+          return sessionDate >= fromDate && sessionDate <= toDate;
+        });
+      }
+
+      if (req.body.limit) {
+        resObj.log = resObj.log.slice(0, req.body.limit);
+      }
+
+      resObj = resObj.toJSON();
+      resObj["count"] = result.log.length;
+      res.json(resObj);
+    }
+  });
+});
 
 /*listener*/
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Shhhhh!!!! Spying on port " + listener.address().port);
 });
+
+//Thank you for the help, knowingly or not...pay it forward!!
