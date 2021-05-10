@@ -2,8 +2,6 @@
 
 2021 Tests
 
-It Passed
-
 Special Thanks to..
 
 Test #3 coded by u/Reckitron at FreeCodeCamp Community on Reddit
